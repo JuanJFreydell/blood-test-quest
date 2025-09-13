@@ -1,6 +1,7 @@
 import { LabOrder } from '@/types/labOrder';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Calendar, User, FileText, AlertCircle } from 'lucide-react';
 
 interface LabOrderCardProps {
@@ -100,6 +101,18 @@ export const LabOrderCard = ({ order }: LabOrderCardProps) => {
             <p className="text-sm"><strong>Notes:</strong> {order.notes}</p>
           </div>
         )}
+
+        <div className="flex flex-wrap gap-2 pt-2 border-t border-border">
+          <Button variant="outline" size="sm" className="text-xs">
+            Pending Sample Collection
+          </Button>
+          <Button variant="outline" size="sm" className="text-xs">
+            Sent for Processing
+          </Button>
+          <Button variant="outline" size="sm" className="text-xs">
+            Submitted
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );
