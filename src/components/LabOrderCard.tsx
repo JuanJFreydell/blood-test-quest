@@ -107,7 +107,11 @@ export const LabOrderCard = ({ order }: LabOrderCardProps) => {
         )}
 
         <div className="pt-2 border-t border-border flex justify-end">
-          <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
+          <Button 
+            size="sm" 
+            className="bg-blue-600 hover:bg-blue-700 text-white"
+            disabled={dynamicStatus.status !== 'COMPLETE'}
+          >
             Send For Medical Review
           </Button>
         </div>
