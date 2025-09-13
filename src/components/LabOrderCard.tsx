@@ -115,7 +115,7 @@ export const LabOrderCard = ({ order }: LabOrderCardProps) => {
             </Button>
           </div>
           <div className="flex justify-end">
-            <Button variant="default" size="sm" className="bg-medical-primary hover:bg-medical-primary/90 text-white">
+            <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
               Send For Medical Review
             </Button>
           </div>
