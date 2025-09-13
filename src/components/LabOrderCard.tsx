@@ -9,27 +9,34 @@ interface LabOrderCardProps {
 }
 
 export const LabOrderCard = ({ order }: LabOrderCardProps) => {
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'stat':
-        return 'bg-medical-urgent text-white';
-      case 'urgent':
-        return 'bg-medical-warning text-white';
-      default:
-        return 'bg-medical-success text-white';
+  const getDynamicStatus = () => {
+    if (order.tests.length === 0) return { status: 'NOT STARTED', color: 'bg-red-600 text-white' };
+    
+    const allAnalyzed = order.tests.every(test => test.status === 'analyzed' || test.status === 'completed');
+    const hasCollected = order.tests.some(test => test.status === 'collected');
+    
+    if (allAnalyzed) {
+      return { status: 'COMPLETE', color: 'bg-green-600 text-white' };
+    } else if (hasCollected) {
+      return { status: 'PENDING', color: 'bg-yellow-600 text-white' };
+    } else {
+      return { status: 'NOT STARTED', color: 'bg-red-600 text-white' };
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const dynamicStatus = getDynamicStatus();
+
+  const getTestStatusColor = (status: string) => {
     switch (status) {
       case 'completed':
-        return 'bg-medical-success text-white';
-      case 'in-progress':
-        return 'bg-medical-warning text-white';
-      case 'cancelled':
-        return 'bg-medical-urgent text-white';
+      case 'analyzed':
+        return 'bg-green-100 text-green-800 border-green-200';
+      case 'collected':
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'pending':
+        return 'bg-red-100 text-red-800 border-red-200';
       default:
-        return 'bg-muted text-muted-foreground';
+        return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
 
@@ -41,11 +48,8 @@ export const LabOrderCard = ({ order }: LabOrderCardProps) => {
             Order #{order.orderNumber}
           </CardTitle>
           <div className="flex items-center gap-2">
-            <Badge className={getPriorityColor(order.priority)}>
-              {order.priority.toUpperCase()}
-            </Badge>
-            <Badge className={getStatusColor(order.status)}>
-              {order.status.replace('-', ' ').toUpperCase()}
+            <Badge className={dynamicStatus.color}>
+              {dynamicStatus.status}
             </Badge>
           </div>
         </div>
@@ -88,7 +92,7 @@ export const LabOrderCard = ({ order }: LabOrderCardProps) => {
                   <span className="font-medium">{test.name}</span>
                   <span className="text-sm text-muted-foreground ml-2">({test.code})</span>
                 </div>
-                <Badge variant="outline" className={getStatusColor(test.status)}>
+                <Badge variant="outline" className={getTestStatusColor(test.status)}>
                   {test.status.replace('-', ' ')}
                 </Badge>
               </div>
@@ -102,23 +106,10 @@ export const LabOrderCard = ({ order }: LabOrderCardProps) => {
           </div>
         )}
 
-        <div className="pt-2 border-t border-border space-y-3">
-          <div className="flex flex-wrap gap-2">
-            <Button variant="outline" size="sm" className="text-xs">
-              Pending Sample Collection
-            </Button>
-            <Button variant="outline" size="sm" className="text-xs">
-              Sent for Processing
-            </Button>
-            <Button variant="outline" size="sm" className="text-xs">
-              Submitted
-            </Button>
-          </div>
-          <div className="flex justify-end">
-            <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
-              Send For Medical Review
-            </Button>
-          </div>
+        <div className="pt-2 border-t border-border flex justify-end">
+          <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
+            Send For Medical Review
+          </Button>
         </div>
       </CardContent>
     </Card>
