@@ -20,19 +20,34 @@ export const LabOrderCard = ({ order, onSelect }: LabOrderCardProps) => {
   const getDynamicStatus = () => {
     if (localOrder.tests.length === 0) return { status: 'NOT STARTED', color: 'bg-red-600 text-white' };
     
-    const allAnalyzed = localOrder.tests.every(test => test.status === 'analyzed' || test.status === 'completed');
-    const hasCollected = localOrder.tests.some(test => test.status === 'collected');
+    const allAnalyzed = localOrder.tests.every(test => test.status === 'analyzed');
+    const hasCollectedOrAnalyzed = localOrder.tests.some(test => test.status === 'collected' || test.status === 'analyzed');
     
     if (allAnalyzed) {
-      return { status: 'COMPLETE', color: 'bg-green-600 text-white' };
-    } else if (hasCollected) {
-      return { status: 'PENDING', color: 'bg-yellow-600 text-white' };
+      return { status: 'COMPLETED', color: 'bg-green-600 text-white' };
+    } else if (hasCollectedOrAnalyzed) {
+      return { status: 'IN PROGRESS', color: 'bg-yellow-600 text-white' };
     } else {
       return { status: 'NOT STARTED', color: 'bg-red-600 text-white' };
     }
   };
 
   const dynamicStatus = getDynamicStatus();
+
+  const getTestStatusDisplayName = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return 'NOT COLLECTED';
+      case 'collected':
+        return 'COLLECTED';
+      case 'analyzed':
+        return 'ANALYZED';
+      case 'completed':
+        return 'ANALYZED';
+      default:
+        return status.toUpperCase();
+    }
+  };
 
   const getTestStatusColor = (status: string) => {
     switch (status) {
@@ -69,7 +84,7 @@ export const LabOrderCard = ({ order, onSelect }: LabOrderCardProps) => {
     
     toast({
       title: "Status Updated",
-      description: `Updated ${selectedTests.length} test${selectedTests.length > 1 ? 's' : ''} to ${newStatus.replace('-', ' ')}`,
+      description: `Updated ${selectedTests.length} test${selectedTests.length > 1 ? 's' : ''} to ${getTestStatusDisplayName(newStatus)}`,
     });
     
     setSelectedTests([]);
@@ -142,9 +157,9 @@ export const LabOrderCard = ({ order, onSelect }: LabOrderCardProps) => {
                     <SelectValue placeholder="Update status" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="pending">Not Collected</SelectItem>
-                    <SelectItem value="collected">Collected</SelectItem>
-                    <SelectItem value="analyzed">Analyzed</SelectItem>
+                    <SelectItem value="pending">NOT COLLECTED</SelectItem>
+                    <SelectItem value="collected">COLLECTED</SelectItem>
+                    <SelectItem value="analyzed">ANALYZED</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -164,7 +179,7 @@ export const LabOrderCard = ({ order, onSelect }: LabOrderCardProps) => {
                     <span className="text-sm text-muted-foreground ml-2">({test.code})</span>
                   </div>
                   <Badge variant="outline" className={getTestStatusColor(test.status)}>
-                    {test.status.replace('-', ' ')}
+                    {getTestStatusDisplayName(test.status)}
                   </Badge>
                 </div>
               </div>
@@ -182,7 +197,7 @@ export const LabOrderCard = ({ order, onSelect }: LabOrderCardProps) => {
           <Button 
             size="sm" 
             className="bg-blue-600 hover:bg-blue-700 text-white"
-            disabled={dynamicStatus.status !== 'COMPLETE'}
+            disabled={dynamicStatus.status !== 'COMPLETED'}
           >
             Send For Medical Review
           </Button>
