@@ -6,6 +6,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar, User, FileText, AlertCircle } from 'lucide-react';
 import { useState } from 'react';
+import { toast } from '@/hooks/use-toast';
 
 interface LabOrderCardProps {
   order: LabOrder;
@@ -14,12 +15,13 @@ interface LabOrderCardProps {
 
 export const LabOrderCard = ({ order, onSelect }: LabOrderCardProps) => {
   const [selectedTests, setSelectedTests] = useState<string[]>([]);
+  const [localOrder, setLocalOrder] = useState(order);
   
   const getDynamicStatus = () => {
-    if (order.tests.length === 0) return { status: 'NOT STARTED', color: 'bg-red-600 text-white' };
+    if (localOrder.tests.length === 0) return { status: 'NOT STARTED', color: 'bg-red-600 text-white' };
     
-    const allAnalyzed = order.tests.every(test => test.status === 'analyzed' || test.status === 'completed');
-    const hasCollected = order.tests.some(test => test.status === 'collected');
+    const allAnalyzed = localOrder.tests.every(test => test.status === 'analyzed' || test.status === 'completed');
+    const hasCollected = localOrder.tests.some(test => test.status === 'collected');
     
     if (allAnalyzed) {
       return { status: 'COMPLETE', color: 'bg-green-600 text-white' };
@@ -55,9 +57,21 @@ export const LabOrderCard = ({ order, onSelect }: LabOrderCardProps) => {
   };
 
   const handleStatusChange = (newStatus: string) => {
-    // In a real app, this would update the backend
-    // For now, we'll just clear the selection
-    console.log(`Updating tests ${selectedTests.join(', ')} to status: ${newStatus}`);
+    // Update the selected tests with the new status
+    setLocalOrder(prev => ({
+      ...prev,
+      tests: prev.tests.map(test => 
+        selectedTests.includes(test.id)
+          ? { ...test, status: newStatus as "pending" | "collected" | "analyzed" | "completed" }
+          : test
+      )
+    }));
+    
+    toast({
+      title: "Status Updated",
+      description: `Updated ${selectedTests.length} test${selectedTests.length > 1 ? 's' : ''} to ${newStatus.replace('-', ' ')}`,
+    });
+    
     setSelectedTests([]);
   };
 
@@ -66,7 +80,7 @@ export const LabOrderCard = ({ order, onSelect }: LabOrderCardProps) => {
     if ((e.target as Element).closest('[data-prevent-selection]')) {
       return;
     }
-    onSelect?.(order);
+    onSelect?.(localOrder);
   };
 
   return (
@@ -116,7 +130,7 @@ export const LabOrderCard = ({ order, onSelect }: LabOrderCardProps) => {
           <div className="flex items-center justify-between mb-2">
             <h4 className="font-medium flex items-center gap-2">
               <AlertCircle className="h-4 w-4" />
-              Tests Ordered ({order.tests.length})
+              Tests Ordered ({localOrder.tests.length})
             </h4>
             {selectedTests.length > 0 && (
               <div className="flex items-center gap-2" data-prevent-selection>
@@ -137,7 +151,7 @@ export const LabOrderCard = ({ order, onSelect }: LabOrderCardProps) => {
             )}
           </div>
           <div className="grid gap-2">
-            {order.tests.map((test) => (
+            {localOrder.tests.map((test) => (
               <div key={test.id} className="flex items-center gap-3 p-2 bg-accent rounded-md">
                 <Checkbox
                   checked={selectedTests.includes(test.id)}
@@ -158,9 +172,9 @@ export const LabOrderCard = ({ order, onSelect }: LabOrderCardProps) => {
           </div>
         </div>
 
-        {order.notes && (
+        {localOrder.notes && (
           <div className="p-3 bg-accent rounded-md">
-            <p className="text-sm"><strong>Notes:</strong> {order.notes}</p>
+            <p className="text-sm"><strong>Notes:</strong> {localOrder.notes}</p>
           </div>
         )}
 
