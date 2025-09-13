@@ -4,15 +4,19 @@ import { LabOrderCard } from '@/components/LabOrderCard';
 import { mockLabOrders } from '@/data/mockLabOrders';
 import { LabOrder } from '@/types/labOrder';
 import { toast } from '@/hooks/use-toast';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
 
 const Index = () => {
   const [searchResults, setSearchResults] = useState<LabOrder[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<LabOrder | null>(null);
 
   const handleSearch = (orderNumber: string) => {
     setIsLoading(true);
     setHasSearched(true);
+    setSelectedOrder(null); // Clear selection when searching
     
     // Simulate API call delay
     setTimeout(() => {
@@ -37,6 +41,45 @@ const Index = () => {
       }
     }, 800);
   };
+
+  const handleOrderSelect = (order: LabOrder) => {
+    setSelectedOrder(order);
+  };
+
+  const handleBack = () => {
+    setSelectedOrder(null);
+  };
+
+  // If an order is selected, show full screen view
+  if (selectedOrder) {
+    return (
+      <div className="min-h-screen bg-background">
+        {/* Header with back button */}
+        <header className="bg-card shadow-sm border-b">
+          <div className="max-w-7xl mx-auto px-4 py-4 flex items-center gap-4">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={handleBack}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to Search
+            </Button>
+            <div>
+              <h1 className="text-2xl font-bold text-primary">Lab Order Details</h1>
+              <p className="text-muted-foreground">Order #{selectedOrder.orderNumber}</p>
+            </div>
+          </div>
+        </header>
+
+        {/* Full screen order view */}
+        <main className="max-w-4xl mx-auto px-4 py-8">
+          <LabOrderCard order={selectedOrder} onSelect={handleOrderSelect} />
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -82,7 +125,7 @@ const Index = () => {
                 </div>
                 <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
                   {searchResults.map((order) => (
-                    <LabOrderCard key={order.id} order={order} />
+                    <LabOrderCard key={order.id} order={order} onSelect={handleOrderSelect} />
                   ))}
                 </div>
               </>

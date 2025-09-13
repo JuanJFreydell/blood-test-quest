@@ -6,9 +6,10 @@ import { Calendar, User, FileText, AlertCircle } from 'lucide-react';
 
 interface LabOrderCardProps {
   order: LabOrder;
+  onSelect?: (order: LabOrder) => void;
 }
 
-export const LabOrderCard = ({ order }: LabOrderCardProps) => {
+export const LabOrderCard = ({ order, onSelect }: LabOrderCardProps) => {
   const getDynamicStatus = () => {
     if (order.tests.length === 0) return { status: 'NOT STARTED', color: 'bg-red-600 text-white' };
     
@@ -41,7 +42,10 @@ export const LabOrderCard = ({ order }: LabOrderCardProps) => {
   };
 
   return (
-    <Card className="w-full shadow-md hover:shadow-lg transition-shadow">
+    <Card 
+      className="w-full shadow-md hover:shadow-lg transition-shadow cursor-pointer"
+      onClick={() => onSelect?.(order)}
+    >
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg font-semibold text-primary">
