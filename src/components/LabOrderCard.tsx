@@ -2,7 +2,10 @@ import { LabOrder } from '@/types/labOrder';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar, User, FileText, AlertCircle } from 'lucide-react';
+import { useState } from 'react';
 
 interface LabOrderCardProps {
   order: LabOrder;
@@ -10,6 +13,8 @@ interface LabOrderCardProps {
 }
 
 export const LabOrderCard = ({ order, onSelect }: LabOrderCardProps) => {
+  const [selectedTests, setSelectedTests] = useState<string[]>([]);
+  
   const getDynamicStatus = () => {
     if (order.tests.length === 0) return { status: 'NOT STARTED', color: 'bg-red-600 text-white' };
     
@@ -41,10 +46,33 @@ export const LabOrderCard = ({ order, onSelect }: LabOrderCardProps) => {
     }
   };
 
+  const handleTestSelect = (testId: string, checked: boolean) => {
+    setSelectedTests(prev => 
+      checked 
+        ? [...prev, testId]
+        : prev.filter(id => id !== testId)
+    );
+  };
+
+  const handleStatusChange = (newStatus: string) => {
+    // In a real app, this would update the backend
+    // For now, we'll just clear the selection
+    console.log(`Updating tests ${selectedTests.join(', ')} to status: ${newStatus}`);
+    setSelectedTests([]);
+  };
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Prevent card selection when clicking on checkboxes or select
+    if ((e.target as Element).closest('[data-prevent-selection]')) {
+      return;
+    }
+    onSelect?.(order);
+  };
+
   return (
     <Card 
       className="w-full shadow-md hover:shadow-lg transition-shadow cursor-pointer"
-      onClick={() => onSelect?.(order)}
+      onClick={handleCardClick}
     >
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
@@ -85,27 +113,53 @@ export const LabOrderCard = ({ order, onSelect }: LabOrderCardProps) => {
         </div>
 
         <div>
-          <h4 className="font-medium mb-2 flex items-center gap-2">
-            <AlertCircle className="h-4 w-4" />
-            Tests Ordered ({order.tests.length})
-          </h4>
+          <div className="flex items-center justify-between mb-2">
+            <h4 className="font-medium flex items-center gap-2">
+              <AlertCircle className="h-4 w-4" />
+              Tests Ordered ({order.tests.length})
+            </h4>
+            {selectedTests.length > 0 && (
+              <div className="flex items-center gap-2" data-prevent-selection>
+                <span className="text-sm text-muted-foreground">
+                  {selectedTests.length} selected
+                </span>
+                <Select onValueChange={handleStatusChange}>
+                  <SelectTrigger className="w-36 h-8">
+                    <SelectValue placeholder="Update status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pending">Not Collected</SelectItem>
+                    <SelectItem value="collected">Collected</SelectItem>
+                    <SelectItem value="analyzed">Analyzed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+          </div>
           <div className="grid gap-2">
             {order.tests.map((test) => (
-              <div key={test.id} className="flex items-center justify-between p-2 bg-accent rounded-md">
-                <div>
-                  <span className="font-medium">{test.name}</span>
-                  <span className="text-sm text-muted-foreground ml-2">({test.code})</span>
+              <div key={test.id} className="flex items-center gap-3 p-2 bg-accent rounded-md">
+                <Checkbox
+                  checked={selectedTests.includes(test.id)}
+                  onCheckedChange={(checked) => handleTestSelect(test.id, !!checked)}
+                  data-prevent-selection
+                />
+                <div className="flex-1 flex items-center justify-between">
+                  <div>
+                    <span className="font-medium">{test.name}</span>
+                    <span className="text-sm text-muted-foreground ml-2">({test.code})</span>
+                  </div>
+                  <Badge variant="outline" className={getTestStatusColor(test.status)}>
+                    {test.status.replace('-', ' ')}
+                  </Badge>
                 </div>
-                <Badge variant="outline" className={getTestStatusColor(test.status)}>
-                  {test.status.replace('-', ' ')}
-                </Badge>
               </div>
             ))}
           </div>
         </div>
 
         {order.notes && (
-          <div className="p-3 bg-medical-light-blue rounded-md">
+          <div className="p-3 bg-accent rounded-md">
             <p className="text-sm"><strong>Notes:</strong> {order.notes}</p>
           </div>
         )}
