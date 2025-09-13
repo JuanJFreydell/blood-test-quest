@@ -102,16 +102,23 @@ export const LabOrderCard = ({ order }: LabOrderCardProps) => {
           </div>
         )}
 
-        <div className="flex flex-wrap gap-2 pt-2 border-t border-border">
-          <Button variant="outline" size="sm" className="text-xs">
-            Pending Sample Collection
-          </Button>
-          <Button variant="outline" size="sm" className="text-xs">
-            Sent for Processing
-          </Button>
-          <Button variant="outline" size="sm" className="text-xs">
-            Submitted
-          </Button>
+        <div className="pt-2 border-t border-border space-y-3">
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" size="sm" className="text-xs">
+              Pending Sample Collection
+            </Button>
+            <Button variant="outline" size="sm" className="text-xs">
+              Sent for Processing
+            </Button>
+            <Button variant="outline" size="sm" className="text-xs">
+              Submitted
+            </Button>
+          </div>
+          <div className="flex justify-end">
+            <Button variant="default" size="sm" className="bg-medical-primary hover:bg-medical-primary/90 text-white">
+              Send For Medical Review
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>
